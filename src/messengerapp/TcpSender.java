@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -111,11 +113,21 @@ public class TcpSender implements Runnable {
         if(message != null) {
             for(int i = connectedSocketList.size()-1; i >= 0; i--) {
                 try {
-                    // TODO maybe close the socket after sending?
+                    if (connectedSocketList.get(i).isClosed()) {
+                        InetSocketAddress oldInetSocketAddress =
+                                (InetSocketAddress) connectedSocketList.get(i)
+                                        .getRemoteSocketAddress();
+                        Socket newSocket = 
+                                new Socket(oldInetSocketAddress.getAddress(), 
+                                        oldInetSocketAddress.getPort());
+                        connectedSocketList.set(i, newSocket);
+                    }
                     sendMessage(connectedSocketList.get(i), message);
+                    connectedSocketList.get(i).close();
                 } catch (IOException e) {
+                    e.printStackTrace();
                     // Remove socket if it can't be reached
-                    System.out.println("::Can't reach " + 
+                    System.out.println(":: Can't reach " + 
                             connectedSocketList.get(i).getInetAddress());
                     removeSocket(i);
                 }

@@ -13,8 +13,7 @@ import java.net.SocketException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ArrayBlockingQueue;
 import junit.extensions.PA;
 import org.junit.After;
 import static org.junit.Assert.*;
@@ -218,16 +217,19 @@ public class TcpSenderTest {
             fail("::Can't create socket");
         }
 
-        String receivedMessage = "";
-        while(!messageReceiver.hasMessage()) {
+        while(messageReceiver.getReceivedMessage() == null) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {}
-        }
-        
-        receivedMessage = messageReceiver.getReceivedMessage();
-        System.out.println(":: assertReceivedMessage = " + receivedMessage);
-        assertEquals(message, receivedMessage);
+        }        
+        String receivedMessage = messageReceiver.getReceivedMessage();
+        messageReceiver.nextReceivedMessage();
+        String assertMessage = message;
+        System.out.println(":: assertMessage = " + 
+                assertMessage);
+        System.out.println(":: receivedMessage = " + 
+                receivedMessage);
+        assertEquals(assertMessage, receivedMessage);
         
         PA.invokeMethod(instance, removeAllSocketsMethod);
         receiverThread.interrupt();
@@ -237,7 +239,7 @@ public class TcpSenderTest {
     /**
      * Test of checkMessageQueue method, of class TcpSender.
      */
-    @Test(timeout = 2000)
+    @Test(timeout = 5000)
     public void testCheckMessageQueueMultiple() {
         System.out.println("checkMessageQueueMultiple");
         String message = "testing checkMessageQueue";
@@ -267,16 +269,46 @@ public class TcpSenderTest {
             fail("::Can't create socket");
         }
 
-        String receivedMessage = "";
-        while(!messageReceiver.hasMessage()) {
+        while(messageReceiver.getReceivedMessage() == null) {
             try {
-                Thread.sleep(100);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {}
-        }
+        }        
+        String receivedMessage = messageReceiver.getReceivedMessage();
+        messageReceiver.nextReceivedMessage();
+        String assertMessage = message;
+        System.out.println(":: assertMessage = " + 
+                assertMessage);
+        System.out.println(":: receivedMessage = " + 
+                receivedMessage);
+        assertEquals(assertMessage, receivedMessage);
+        
+        while(messageReceiver.getReceivedMessage() == null) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {}
+        }        
         
         receivedMessage = messageReceiver.getReceivedMessage();
-        String assertMessage = String.format("%1$s%1$s%1$s", message);
-        System.out.println(":: assertReceivedMessage = " + 
+        messageReceiver.nextReceivedMessage();
+        assertMessage = message;
+        System.out.println(":: assertMessage = " + 
+                assertMessage);
+        System.out.println(":: receivedMessage = " + 
+                receivedMessage);
+        assertEquals(assertMessage, receivedMessage);
+        
+        while(messageReceiver.getReceivedMessage() == null) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {}
+        }        
+        receivedMessage = messageReceiver.getReceivedMessage();
+        messageReceiver.nextReceivedMessage();
+        assertMessage = message;
+        System.out.println(":: assertMessage = " + 
+                assertMessage);
+        System.out.println(":: receivedMessage = " + 
                 receivedMessage);
         assertEquals(assertMessage, receivedMessage);
         
@@ -288,7 +320,7 @@ public class TcpSenderTest {
     /**
      * Test of checkMessageQueue method, of class TcpSender.
      */
-    @Test(timeout = 5000)
+    //@Test(timeout = 5000)
     public void testCheckMessageQueueClosed() {
         System.out.println("checkMessageQueueClosed");
         String message = "testing checkMessageQueue";
@@ -315,13 +347,14 @@ public class TcpSenderTest {
             fail("::Can't create socket");
         }
 
-        while(!messageReceiver.hasMessage()) {
+        while(messageReceiver.getReceivedMessage() == null) {
             try {
                 Thread.sleep(50);
             } catch (InterruptedException ex) {}
         }
         
         String receivedMessage = messageReceiver.getReceivedMessage();
+        messageReceiver.nextReceivedMessage();
         System.out.println(":: assertReceivedMessage = " + receivedMessage);
         assertEquals(message, receivedMessage);
         
@@ -329,32 +362,26 @@ public class TcpSenderTest {
     }
         
     private static class messageReceiver implements Runnable, Closeable {
+        private final Queue<String> receviedMessageQueue;
         private ServerSocket receiver;
         private Socket receiverSocket;
-        private String receviedMessage;
-        private boolean hasMessage;
         private boolean isReady;
 
         public messageReceiver() {
-            this.receviedMessage = "";
-            this.hasMessage = false;
+            this.receviedMessageQueue = new ArrayBlockingQueue<String>(20);
             this.isReady = false;
         }
         
         public boolean isReady() {
             return this.isReady;
         }
-        
-        public boolean hasMessage() {
-            return this.hasMessage;
-        }
 
-        public synchronized String getReceivedMessage() {
-            return this.receviedMessage;
+        public String getReceivedMessage() {
+            return this.receviedMessageQueue.peek();
         }
         
-        public synchronized void setReceivedMessage(String receviedMessage) {
-            this.receviedMessage = receviedMessage;
+        public void nextReceivedMessage() {
+            this.receviedMessageQueue.poll();
         }
 
         @Override
@@ -371,16 +398,13 @@ public class TcpSenderTest {
                         ) {
                         this.receiverSocket = receiverSocket;
                         String input = in.readLine();
+                        String message = "";
                         while (input != null) {
-                            System.out.println(":: oldReceivedMessage = " + getReceivedMessage());
-                            System.out.println(":: input = " + input);
-                            String oldReceivedMessage = getReceivedMessage();
-                            setReceivedMessage(oldReceivedMessage + input);
-                            System.out.println(":: newReceivedMessage = " + getReceivedMessage());
+                            message = message + input;
                             input = in.readLine();
                         }
+                        receviedMessageQueue.add(message);
                         System.out.println(":: message ready");
-                        hasMessage = true;
                     }
                 }
             } catch (SocketException ex) {
