@@ -51,7 +51,6 @@ public class TcpReceiverTest {
         Queue uiMessageQueue = new ArrayBlockingQueue(50);
         TcpReceiver instance = new TcpReceiver(uiMessageQueue);
         Thread receiverThread = new Thread(instance);
-        receiverThread.setDaemon(true);
         receiverThread.start();
         
         while(!instance.isReady()) {
@@ -96,7 +95,6 @@ public class TcpReceiverTest {
         Queue uiMessageQueue = new ArrayBlockingQueue(50);
         TcpReceiver instance = new TcpReceiver(uiMessageQueue);
         Thread receiverThread = new Thread(instance);
-        receiverThread.setDaemon(true);
         receiverThread.start();
         
         while(!instance.isReady()) {
@@ -143,13 +141,14 @@ public class TcpReceiverTest {
         Queue uiMessageQueue = new ArrayBlockingQueue(50);
         TcpReceiver instance = new TcpReceiver(uiMessageQueue);
         Thread receiverThread = new Thread(instance);
-        receiverThread.setDaemon(true);
         receiverThread.start();
         
         while(!instance.isReady()) {
             try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {}
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
         
         InetAddress ip = InetAddress.getLoopbackAddress();
