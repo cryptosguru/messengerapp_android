@@ -1,6 +1,3 @@
-/*
- */
-
 package messengerapp;
 
 import java.io.BufferedReader;
@@ -34,7 +31,6 @@ public class TcpReceiverWorker implements Runnable {
      */
     @Override
     public void run() {
-        // TODO maybe use a while loop?
         try(BufferedReader in = new BufferedReader(new InputStreamReader(
                 sender.getInputStream()))) {
             String message = getWholeMessage(in);
