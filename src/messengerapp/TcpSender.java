@@ -1,6 +1,3 @@
-/*
- */
-
 package messengerapp;
 
 import java.io.IOException;
@@ -9,7 +6,6 @@ import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
@@ -67,12 +63,18 @@ public class TcpSender implements Runnable {
      * connectedSocketList. Only exits when possibleReceiverQueue is empty.
      */
     private void checkReceiverQueue() {
+        // Retrieve the IP address of a machine to connect from queue
         InetAddress receiverIp = possibleReceiverQueue.poll();
+        // If the retrieve is successful then loop
         while(receiverIp != null) {
+            // Make sure the retrieved IP address is not a wildcard and
+            // is not already in the list
             if(!receiverIp.isAnyLocalAddress() && !isIpInList(receiverIp)) {
                 try {
+                    // Open a new socket
                     Socket receiverSocket = new Socket(receiverIp, 
                             TcpReceiver.PORT);
+                    // Add the socket to list
                     connectedSocketList.add(receiverSocket);
                 } catch (ConnectException e) {
                     // TODO use logger
@@ -83,6 +85,7 @@ public class TcpSender implements Runnable {
                 }
             }
             
+            // Try to retrieve another IP address from queue
             receiverIp = possibleReceiverQueue.poll();
         }
     }
@@ -109,17 +112,24 @@ public class TcpSender implements Runnable {
      * each call.
      */
     private void checkMessageQueue() {
+        // Retrieve a message that is waiting to be sent from queue
         String message = messageQueue.poll();
+        // Continue and loop if message retrieve is successful
         if(message != null) {
+            // Try to send to all connected machines in the list
             for(int i = connectedSocketList.size()-1; i >= 0; i--) {
                 try {
+                    // If the socket is close, repoen it
                     if (connectedSocketList.get(i).isClosed()) {
+                        // Get the IP address and port of the machine
                         InetSocketAddress oldInetSocketAddress =
                                 (InetSocketAddress) connectedSocketList.get(i)
                                         .getRemoteSocketAddress();
+                        // Create a new socket using that IP address and port
                         Socket newSocket = 
                                 new Socket(oldInetSocketAddress.getAddress(), 
                                         oldInetSocketAddress.getPort());
+                        // Replace the closed socket in list with the new socket
                         connectedSocketList.set(i, newSocket);
                     }
                     sendMessage(connectedSocketList.get(i), message);
@@ -133,6 +143,7 @@ public class TcpSender implements Runnable {
                 }
             }
         } else {
+            // If the message queue is empty, pause for 10ms
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
