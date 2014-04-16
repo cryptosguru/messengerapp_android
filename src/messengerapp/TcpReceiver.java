@@ -14,7 +14,8 @@ import java.util.Queue;
  * TCP Receiver Runnable for creating background receiver thread to listen for
  * connections, and pass established connections to TcpReceiverWorker class.
  * Also passes ip address of incoming connections to a TcpSender instance as
- * possible receiver.
+ * possible receiver. Should check the isRead() method before passing this 
+ * object.
  * @author Shung-Hsi Yu <syu07@nyit.edu> ID#0906172
  * @version Apr 11, 2014
  */
@@ -64,20 +65,29 @@ public class TcpReceiver implements Runnable, Closeable {
     @Override
     public void run() {
         receiverSocket = null;
-        try {                
+        try {
+            // Try to bind to the receiver port
             receiverSocket = new ServerSocket(PORT);
+            // Mark this instance as reaady for incoming message
             isReady = true;
+            // Continue to loop until the thread is interrupted
             while (!Thread.currentThread().isInterrupted()) {
+                // Block and wait for incoming connections
                 Socket sender = receiverSocket.accept();
                 
+                // Pass the IP address of connected machine to a TcpSender 
+                // instance
                 if(hasTcpSender) {
                     tcpSender.addReceiver(sender.getInetAddress());
                 }
                 
                 // TODO add exector service with cache thread pool
-                Runnable receiverThread = 
+                // Create a new runnable that will retrieve the message from a 
+                // sender
+                Runnable receiverWorker = 
                         new TcpReceiverWorker(sender, uiMessageQueue);
-                new Thread(receiverThread).start();
+                // Start a new thread running the runnable
+                new Thread(receiverWorker).start();
             }
         } catch (SocketException e) {
             // Do nothing when the socket is close
