@@ -3,7 +3,10 @@ package com.example.myfirstapp;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -15,24 +18,38 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private EditText numberText;
 	private EditText contentText;
-	
+	private TextView textview;
+
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_main);
 		
+		textview=(TextView) this.findViewById(R.id.display);
 		numberText=(EditText) this.findViewById(R.id.To);
 		contentText=(EditText) this.findViewById(R.id.edit_message);
 		Button button=(Button) this.findViewById(R.id.button_send);
 		button.setOnClickListener(new ButtonClickListener());
 	}
+
+	public void sendMessage(View view){
+	   	String message=contentText.getText().toString();
+		if(textview!=null){
+			textview.append("address£º ");
+			textview.append(message.trim());
+			textview.append("\n");
+		} else {
+			System.out.println("textview is null!");
+		}
+	}
 	
 	private final class ButtonClickListener implements View.OnClickListener{
-		
+
 		public void onClick(View v){
 			String number=numberText.getText().toString();
 			String content=contentText.getText().toString();
@@ -41,14 +58,15 @@ public class MainActivity extends Activity {
 			for(String text:texts){
 				manager.sendTextMessage(number,null,text,null,null);
 			}
+			sendMessage(v);
 			Toast.makeText(MainActivity.this,R.string.success,Toast.LENGTH_LONG).show();;
 		}
-		
+
 	}
-	
-	
-	
-	
+
+
+
+
 	/*public final static String EXTRA_MESSAGE="com.example.myfirstapp.MESSAGE";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

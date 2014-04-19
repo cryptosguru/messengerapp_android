@@ -10,4 +10,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="To">Receiver:</string>
 	<string name="success">successfully send</string>
+	<string name="display">display</string>
+	<string name="numberlabel">numberlabel</string>
+	<string name="edit">edit</string>
 </resources>

@@ -1,5 +1,8 @@
 <resources>
-
+ <style name="to">
+	    <item name="android:textSize">20dp</item>
+	    <item name="android:textColor">#ADADAD</item>
+	 </style>
     <!--
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
@@ -18,3 +21,4 @@
     </style>
 
 </resources>
+

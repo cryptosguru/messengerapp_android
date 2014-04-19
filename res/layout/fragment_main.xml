@@ -8,41 +8,78 @@
     android:paddingRight="16dp"
     android:orientation="vertical"
     >  
-
+	
+    <RelativeLayout
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"   
+    >
+        <TextView
+        style="@style/to"
+  	 	android:layout_width="wrap_content"
+      	android:layout_height="wrap_content"
+        android:text="@string/To"
+        android:id="@+id/numberlabel"
+        
+  	     />
+   	    <EditText    
+  	  	android:layout_width="wrap_content"
+      	android:layout_height="wrap_content"
+      	android:id="@+id/To"
+      	android:layout_toRightOf="@id/numberlabel"
+      	android:layout_alignTop="@id/numberlabel"
+      	android:ems="10"
+    	 /> 
+    	 
+    	 
+    	 
+    </RelativeLayout>
     <TextView
-  	 android:layout_width="fill_parent"
+        android:id="@+id/display"
+        android:layout_width="fill_parent"
+        android:layout_height="250dp"
+        >
+    </TextView>
+     <RelativeLayout
+         android:layout_width="fill_parent"
+         android:layout_height="wrap_content"
+         >
+         
+ 		<TextView
+ 	  style="@style/to"
+  	  android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-          android:text="@string/To"
+      android:text="Enter"
+      android:id="@+id/edit"
+      android:layout_centerVertical="true"
   	     />
-    <EditText 
-  	  android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:id="@+id/To"
-      
-     /> 
-  	 <TextView
-  	  android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:text="@string/edit_message"
-      
-  	     />
-    
-  	<EditText 
-      android:layout_width="fill_parent"
+    	
+    	
+  		<EditText
+      android:layout_width="wrap_content"
   	  android:layout_height="wrap_content"
-  	  android:minLines="3"
-  	  android:layout_gravity="bottom"
+  	  android:minLines="1"
+  	  android:ems="6"
   	  android:id="@+id/edit_message"
+  	  android:layout_toRightOf="@id/edit"
+  	  android:inputType="textMultiLine"
+  	 
   	   />
        
     <Button
-       android:layout_width="100dp"
+        android:background="#8EE5EE"
+       android:layout_width="wrap_content"
        android:layout_height="wrap_content"
-       android:layout_gravity="right"
+       android:layout_alignParentRight="true"
        android:text="@string/button_send"
        android:onClick="sendMessage"
        android:id="@+id/button_send"
+       android:layout_toRightOf="@id/edit_message"
+  	  android:layout_alignBottom="@id/edit_message"
        />
+  
+    	
+    </RelativeLayout>
+  	 
      </LinearLayout>   
   
 
