@@ -1,8 +1,9 @@
 /*
  */
 
-package messengerapp;
+package com.example.myfirstapp;
 
+import com.example.myfirstapp.TcpReceiver;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;

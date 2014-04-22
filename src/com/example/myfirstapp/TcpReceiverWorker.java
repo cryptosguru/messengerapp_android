@@ -1,4 +1,4 @@
-package messengerapp;
+package com.example.myfirstapp;
 
 import java.io.BufferedReader;
 import java.io.IOException;

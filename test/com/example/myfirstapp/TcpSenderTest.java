@@ -1,7 +1,9 @@
 /*
  */
-package messengerapp;
+package com.example.myfirstapp;
 
+import com.example.myfirstapp.TcpReceiver;
+import com.example.myfirstapp.TcpSender;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;

@@ -1,7 +1,7 @@
 /*
  */
 
-package messengerapp;
+package com.example.myfirstapp;
 
 import java.io.Closeable;
 import java.io.IOException;
