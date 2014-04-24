@@ -31,10 +31,13 @@ public class TcpReceiverWorker implements Runnable {
      */
     @Override
     public void run() {
-        try(BufferedReader in = new BufferedReader(new InputStreamReader(
-                sender.getInputStream()))) {
+        try {
+        	BufferedReader in = new BufferedReader(
+        			new InputStreamReader(
+        					sender.getInputStream()));
             String message = getWholeMessage(in);
             showMessage(sender.getInetAddress(), message);
+            in.close();
         } catch (IOException e) {
             // TODO write error recovery code
             System.out.println(":: Can't retrieve message");
