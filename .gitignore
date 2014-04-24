@@ -1,6 +1,3 @@
-/src/assignment5/RMILabServer/
-/src/assignment5/RMILabClient/
-/src/assignment5/BumperServer/
-/src/assignment5/BumperClient/
-/src/assignment5/Exercise5_1/
-/src/META-INF/
+/gen
+/bin
+/libs
