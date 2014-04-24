@@ -27,9 +27,9 @@ public class TcpSender implements Runnable {
      * Constructor for TcpSender class.
      */
     public TcpSender() {
-        possibleReceiverQueue = new ArrayBlockingQueue<>(50);
-        messageQueue = new ArrayBlockingQueue<>(20);
-        connectedSocketList = new ArrayList<>();
+        possibleReceiverQueue = new ArrayBlockingQueue<InetAddress>(50);
+        messageQueue = new ArrayBlockingQueue<String>(20);
+        connectedSocketList = new ArrayList<Socket>();
     }
     
     /**
