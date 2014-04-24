@@ -1,13 +1,16 @@
 package com.example.myfirstapp;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.SmsManager;
@@ -24,49 +27,63 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 	private EditText numberText;
 	private EditText contentText;
-	private TextView textview;
-
+	private TextView textView;
+	private TcpSender tcpSender;
+	private Thread senderThread;
+	private TcpReceiver tcpReceiver;
+	private Thread receiverThread;
+	private Queue<String> uiMessageQueue;
+	private Handler mHandler;
+	
 	public void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.fragment_main);
 		
-		textview=(TextView) this.findViewById(R.id.display);
+		mHandler = new Handler(Looper.getMainLooper());
+		textView=(TextView) this.findViewById(R.id.display);
 		numberText=(EditText) this.findViewById(R.id.To);
 		contentText=(EditText) this.findViewById(R.id.edit_message);
 		Button button=(Button) this.findViewById(R.id.button_send);
 		button.setOnClickListener(new ButtonClickListener());
+		
+		// Create a queue to store incoming message
+		uiMessageQueue = new ArrayBlockingQueue<String>(50);
+		// Launch TCP Sender
+		tcpSender = new TcpSender();
+		senderThread = new Thread(tcpSender);
+		senderThread.start();
+		// Launch TCP Receiver
+		tcpReceiver = new TcpReceiver(tcpSender, uiMessageQueue);
+		receiverThread = new Thread(tcpReceiver);
+		receiverThread.start();
 	}
 
 	public void sendMessage(View view){
 	   	String message=contentText.getText().toString();
-		if(textview!=null){
-			textview.append("address£º ");
-			textview.append(message.trim());
-			textview.append("\n");
+		if(textView!=null){
+			textView.append("addressï¿½ï¿½ ");
+			textView.append(message.trim());
+			textView.append("\n");
 		} else {
 			System.out.println("textview is null!");
 		}
 	}
 	
 	private final class ButtonClickListener implements View.OnClickListener{
-
+		
 		public void onClick(View v){
 			String number=numberText.getText().toString();
 			String content=contentText.getText().toString();
-			SmsManager manager=SmsManager.getDefault();
-			ArrayList<String> texts=manager.divideMessage(content);
-			for(String text:texts){
-				manager.sendTextMessage(number,null,text,null,null);
-			}
 			sendMessage(v);
+			tcpSender.send(content);
 			Toast.makeText(MainActivity.this,R.string.success,Toast.LENGTH_LONG).show();;
 		}
-
+		
 	}
-
-
-
-
+	
+	
+	
+	
 	/*public final static String EXTRA_MESSAGE="com.example.myfirstapp.MESSAGE";
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
