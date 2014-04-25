@@ -10,9 +10,10 @@
     >  
 	
     <RelativeLayout
-     android:layout_width="fill_parent"
-     android:layout_height="wrap_content"   
-    >
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" >
+
         <TextView
         style="@style/to"
   	 	android:layout_width="wrap_content"
@@ -28,17 +29,23 @@
       	android:layout_toRightOf="@id/numberlabel"
       	android:layout_alignTop="@id/numberlabel"
       	android:ems="10"
-    	 /> 
-    	 
-    	 
+    	 />
+
+   	    <ScrollView
+   	        android:id="@+id/scrollView1"
+   	        android:layout_width="fill_parent"
+   	        android:layout_height="fill_parent"
+   	        android:layout_below="@+id/To" >
+
+   	        <TextView
+   	            android:id="@+id/display"
+   	            android:layout_width="fill_parent"
+   	            android:layout_height="wrap_content"
+   	            android:freezesText="true" />
+
+   	    </ScrollView>
     	 
     </RelativeLayout>
-    <TextView
-        android:id="@+id/display"
-        android:layout_width="fill_parent"
-        android:layout_height="250dp"
-        >
-    </TextView>
      <RelativeLayout
          android:layout_width="fill_parent"
          android:layout_height="wrap_content"
