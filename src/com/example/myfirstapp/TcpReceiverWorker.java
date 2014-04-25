@@ -7,6 +7,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Queue;
 
+import android.os.Handler;
+
 /**
  * TCP Receiver Worker to handle established incoming connections.
  * @author Shung-Hsi Yu <syu07@nyit.edu> ID#0906172
@@ -15,14 +17,16 @@ import java.util.Queue;
 public class TcpReceiverWorker implements Runnable {
     private Socket sender;
     private final Queue<String> uiMessageQueue;
+    private Handler mHandler;
 
     /**
      * Constructor for TcpReceiverWorker class.
      * @param sender the socket object that is connect to the sender
      * @param uiMessageQueue Queue which will take the received messages
      */
-    public TcpReceiverWorker(Socket sender, Queue<String> uiMessageQueue) {
-        this.sender = sender;
+    public TcpReceiverWorker(Socket sender, Queue<String> uiMessageQueue, Handler mHandler) {
+        this.mHandler = mHandler;
+    	this.sender = sender;
         this.uiMessageQueue = uiMessageQueue;
     }
     
@@ -70,6 +74,7 @@ public class TcpReceiverWorker implements Runnable {
      */
     private void showMessage(InetAddress senderIp, String message) {
         uiMessageQueue.add(senderIp.getHostAddress() + ": " + message);
+        mHandler.sendEmptyMessage(0);
     }
 
 }
