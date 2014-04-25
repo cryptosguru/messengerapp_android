@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Queue;
 
+import android.os.Handler;
+
 /**
  * TCP Receiver Runnable for creating background receiver thread to listen for
  * connections, and pass established connections to TcpReceiverWorker class.
@@ -26,12 +28,14 @@ public class TcpReceiver implements Runnable, Closeable {
     private boolean isReady;
     private final TcpSender tcpSender;
     private final Queue<String> uiMessageQueue;
+    private Handler mHandler;
 
     /**
      * Constructor of TcpReceiver class. Does not take a TcpSender instance.
      * @param uiMessageQueue Queue which will take the received messages
      */
-    public TcpReceiver(Queue<String> uiMessageQueue) {
+    public TcpReceiver(Queue<String> uiMessageQueue, Handler mHandler) {
+    	this.mHandler = mHandler;
         this.tcpSender = null;
         this.hasTcpSender = false;
         this.uiMessageQueue = uiMessageQueue;
@@ -44,7 +48,8 @@ public class TcpReceiver implements Runnable, Closeable {
      * @param tcpSender TcpSender instance to take the IP address
      * @param uiMessageQueue Queue which will take the received messages
      */
-    public TcpReceiver(TcpSender tcpSender, Queue<String> uiMessageQueue) {
+    public TcpReceiver(TcpSender tcpSender, Queue<String> uiMessageQueue, Handler mHandler) {
+    	this.mHandler = mHandler;
         this.tcpSender = tcpSender;
         this.hasTcpSender = true;
         this.uiMessageQueue = uiMessageQueue;
@@ -85,7 +90,7 @@ public class TcpReceiver implements Runnable, Closeable {
                 // Create a new runnable that will retrieve the message from a 
                 // sender
                 Runnable receiverWorker = 
-                        new TcpReceiverWorker(sender, uiMessageQueue);
+                        new TcpReceiverWorker(sender, uiMessageQueue, mHandler);
                 // Start a new thread running the runnable
                 new Thread(receiverWorker).start();
             }
