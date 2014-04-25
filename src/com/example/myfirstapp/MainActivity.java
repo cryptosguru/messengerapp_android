@@ -11,7 +11,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.SmsManager;
 import android.view.LayoutInflater;
@@ -24,7 +26,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ActionBarActivity {
+	private static final String TASK_FRAGMENT = "task_fragment";
 	private EditText numberText;
 	private EditText contentText;
 	private TextView textView;
@@ -34,18 +37,58 @@ public class MainActivity extends Activity {
 	private Thread receiverThread;
 	private Queue<String> uiMessageQueue;
 	private Handler mHandler;
+	private Fragment mFragment;
 	
-	public void onCreate(Bundle savedInstanceState){
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		FragmentManager fm = getSupportFragmentManager();
+		mFragment = fm.findFragmentByTag(TASK_FRAGMENT);
+
+		if (mFragment == null) {
+			mFragment = new PlaceholderFragment();
+			fm.beginTransaction().add(mFragment, TASK_FRAGMENT).commit();
+		}
+		
 		setContentView(R.layout.fragment_main);
 		
-		mHandler = new Handler(Looper.getMainLooper());
 		textView=(TextView) this.findViewById(R.id.display);
 		numberText=(EditText) this.findViewById(R.id.To);
 		contentText=(EditText) this.findViewById(R.id.edit_message);
 		Button button=(Button) this.findViewById(R.id.button_send);
 		button.setOnClickListener(new ButtonClickListener());
-		
+		// Bind Handler with main Looper
+		mHandler = new Handler(Looper.getMainLooper()) {
+			// Tell main looper to poll uiMessageQueue
+			@Override
+			public void handleMessage(Message signalMessage) {
+				super.handleMessage(signalMessage);
+				String message = uiMessageQueue.poll();
+				Activity mainActivity = mFragment.getActivity();
+				if(mainActivity != null) {
+					textView=(TextView) mainActivity.findViewById(R.id.display);
+					System.out.println("::handler: textView = " + textView);
+				} else {
+					System.out.println("::mainActivity is null");
+				}
+				String myIP = "127.0.0.1:";
+				if(message != null) {
+					if(textView != null) {
+						if(message.startsWith(myIP)) {
+							message = "Me (127.0.0.1):"+ 
+									message.substring(myIP.length());
+						}
+						textView.append(message);
+					} else {
+						System.out.println("::textView is null");						
+					}
+				} else {
+					System.out.println("::No new message");
+				}
+			}
+		};
 		// Create a queue to store incoming message
 		uiMessageQueue = new ArrayBlockingQueue<String>(50);
 		// Launch TCP Sender
@@ -53,15 +96,30 @@ public class MainActivity extends Activity {
 		senderThread = new Thread(tcpSender);
 		senderThread.start();
 		// Launch TCP Receiver
-		tcpReceiver = new TcpReceiver(tcpSender, uiMessageQueue);
+		tcpReceiver = new TcpReceiver(tcpSender, uiMessageQueue, mHandler);
 		receiverThread = new Thread(tcpReceiver);
 		receiverThread.start();
+		// Added self IP for debugging purpose
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				InetAddress ip = null;
+				try {
+					ip = InetAddress.getLocalHost();
+				} catch (UnknownHostException e) {
+					e.printStackTrace();
+				}
+				tcpSender.addReceiver(ip);
+			}
+			
+		}).start();
 	}
 
 	public void sendMessage(View view){
 	   	String message=contentText.getText().toString();
 		if(textView!=null){
-			textView.append("address�� ");
+			textView.append("address ");
 			textView.append(message.trim());
 			textView.append("\n");
 		} else {
@@ -80,32 +138,7 @@ public class MainActivity extends Activity {
 		}
 		
 	}
-	
-	
-	
-	
-	/*public final static String EXTRA_MESSAGE="com.example.myfirstapp.MESSAGE";
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-
-		if (savedInstanceState == null) {
-			getSupportFragmentManager().beginTransaction()
-					.add(R.id.container, new PlaceholderFragment()).commit();
-		}
-	}
-
-	//called when the user clicks the send button
-	public void sendMessage(View view){
-		//do something in response to button
-		Intent intent=new Intent(this, DisplayMessageActivity.class);
-		EditText editText=(EditText) findViewById(R.id.edit_message);
-		String message=editText.getText().toString();
-		intent.putExtra(EXTRA_MESSAGE,message);
-		startActivity(intent);
-	}
-	
+		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -129,11 +162,34 @@ public class MainActivity extends Activity {
 	/**
 	 * A placeholder fragment containing a simple view.
 	 */
-	/*public static class PlaceholderFragment extends Fragment {
-
+	public static class PlaceholderFragment extends Fragment {
+		Activity mainActivity;
+		
 		public PlaceholderFragment() {
 		}
-
+		
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			setRetainInstance(true);
+			System.out.println("::Fragment created");
+		}
+		
+		@Override
+		public void onAttach(Activity activity) {
+		    super.onAttach(activity);
+		    mainActivity = activity;
+			System.out.println("::Fragment attached");
+		    
+		}
+		
+		@Override
+		  public void onDetach() {
+		    super.onDetach();
+		    mainActivity = null;
+			System.out.println("::Fragment detached");
+		}
+		
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
@@ -141,6 +197,12 @@ public class MainActivity extends Activity {
 					false);
 			return rootView;
 		}
-	}*/
+		
+		public Activity getMainActivity() {
+			return this.mainActivity;
+		}
+	}
+		
+	
 
 }
