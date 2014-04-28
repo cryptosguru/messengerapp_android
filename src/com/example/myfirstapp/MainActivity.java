@@ -134,6 +134,7 @@ public class MainActivity extends ActionBarActivity {
 			String content=contentText.getText().toString();
 			sendMessage(v);
 			tcpSender.send(content);
+			contentText.setText("");
 			Toast.makeText(MainActivity.this,R.string.success,Toast.LENGTH_LONG).show();;
 		}
 		
