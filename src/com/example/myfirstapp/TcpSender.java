@@ -69,7 +69,7 @@ public class TcpSender implements Runnable {
         while(receiverIp != null) {
             // Make sure the retrieved IP address is not a wildcard and
             // is not already in the list
-            if(!receiverIp.isAnyLocalAddress() && !isIpInList(receiverIp)) {
+            if(!receiverIp.isAnyLocalAddress() && !receiverIp.isLoopbackAddress() && !isIpInList(receiverIp)) {
                 try {
                     // Open a new socket
                     Socket receiverSocket = new Socket(receiverIp, 
