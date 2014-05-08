@@ -130,7 +130,20 @@ public class MainActivity extends ActionBarActivity {
 	private final class ButtonClickListener implements View.OnClickListener{
 		
 		public void onClick(View v){
-			String number=numberText.getText().toString();
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					InetAddress ip = null;
+					try {
+						ip = InetAddress.getByName(numberText.getText().toString());
+						tcpSender.addReceiver(ip);
+					} catch (UnknownHostException e) {
+						// Ignore
+					}
+				}
+				
+			}).start();
 			String content=contentText.getText().toString();
 			sendMessage(v);
 			tcpSender.send(content);
